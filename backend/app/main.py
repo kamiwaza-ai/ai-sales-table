@@ -4,9 +4,9 @@ from uuid import uuid4
 import json
 from typing import List, Dict
 
-from .models import Column, Row, ColumnCreate, RowCreate
-from .database import get_db
-from .firecrawl import extract_data
+from app.models import Column, Row, ColumnCreate, RowCreate
+from app.database import get_db
+from app.firecrawl import extract_data
 
 # WebSocket connection manager
 class ConnectionManager:
