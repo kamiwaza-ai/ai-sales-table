@@ -5,6 +5,7 @@ app = "ai-sales-table-backend"
 
 [env]
   PORT = "8080"
+  PYTHONUNBUFFERED = "1"
 
 [http_service]
   internal_port = 8080
@@ -29,4 +30,11 @@ app = "ai-sales-table-backend"
     handlers = ["tls", "http"]
 
 [deploy]
-  release_command = "python -m uvicorn app.main:app --host 0.0.0.0 --port 8080"
+  strategy = "immediate"
+
+[[statics]]
+  guest_path = "/app/static"
+  url_prefix = "/static"
+
+[processes]
+  app = "python -m uvicorn app.main:app --host 0.0.0.0 --port 8080"
