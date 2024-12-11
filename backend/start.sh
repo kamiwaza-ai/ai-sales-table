@@ -5,4 +5,4 @@ cd /app
 export PYTHONPATH=/app:$PYTHONPATH
 
 # Start uvicorn
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8080
+python -m uvicorn main:app --host 0.0.0.0 --port 8080
