@@ -15,7 +15,6 @@ export function DataGrid() {
   const [website, setWebsite] = useState("")
   const [addingWebsite, setAddingWebsite] = useState(false)
   const [wsConnected, setWsConnected] = useState(false)
-  const [initialized, setInitialized] = useState(false)
 
   const loadData = async () => {
     try {
@@ -50,35 +49,17 @@ export function DataGrid() {
     }
   }, []);
 
-  useEffect(() => {
-    if (wsConnected && !initialized) {
-      loadData().then(async () => {
-        const data = await api.getData();
-        if (data.columns.length === 0) {
-          try {
-            await api.addColumn("Company Name");
-            await api.addColumn("Mission");
-            setInitialized(true);
-            await loadData();
-          } catch (err) {
-            console.error("Failed to add default columns:", err);
-            setError("Failed to add default columns. Please try again.");
-          }
-        } else {
-          setInitialized(true);
-        }
-      });
-    }
-  }, [wsConnected, initialized]);
-
   const handleAddWebsite = async (e: React.FormEvent) => {
     e.preventDefault()
     setAddingWebsite(true)
     setError(null)
 
     try {
-      await api.addRow(website)
-      setWebsite("")
+      if (website.trim()) {
+        await api.addRow(website.trim())
+        // Remove loadData() call since we'll get updates via WebSocket
+        setWebsite("")
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add website")
     } finally {
@@ -121,14 +102,23 @@ export function DataGrid() {
               </Button>
             </div>
           </div>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => api.clearColumns()}
-            disabled={columns.length === 0}
-          >
-            Clear All Columns
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => api.refreshData()}
+              disabled={columns.length === 0}
+            >
+              Refresh Data
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => api.clearColumns()}
+              disabled={columns.length === 0}
+            >
+              Clear All Columns
+            </Button>
+          </div>
         </div>
       </form>
 
@@ -148,7 +138,7 @@ export function DataGrid() {
                 <TableCell>{row.website}</TableCell>
                 {columns.map((column) => (
                   <TableCell key={`${row.id}-${column.id}`}>
-                    {row.data[column.name.toLowerCase()] || "[auto]"}
+                    {row.data[column.name] || ''}
                   </TableCell>
                 ))}
               </TableRow>

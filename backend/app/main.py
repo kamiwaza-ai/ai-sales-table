@@ -80,38 +80,6 @@ async def add_column(column: ColumnCreate):
                 (column_id, column.name)
             )
 
-            # Get all rows to process with new column
-            rows = conn.execute("SELECT id, website FROM rows").fetchall()
-
-            # Get all columns for extraction (including new one)
-            columns = [
-                Column(**col)
-                for col in conn.execute("SELECT * FROM columns").fetchall()
-            ]
-
-            # Process extraction for all existing rows
-            for row in rows:
-                try:
-                    # Extract data using Firecrawl
-                    extracted_data = await extract_data(row["website"], columns)
-
-                    conn.execute(
-                        "UPDATE rows SET data = ? WHERE id = ?",
-                        (json.dumps(extracted_data), row["id"])
-                    )
-                except Exception as e:
-                    print(f"Error extracting data for {row['website']}: {e}")
-                    # On error, set N/A for the new column only
-                    current_data = json.loads(conn.execute(
-                        "SELECT data FROM rows WHERE id = ?",
-                        (row["id"],)
-                    ).fetchone()["data"])
-                    current_data[column.name] = "N/A"
-                    conn.execute(
-                        "UPDATE rows SET data = ? WHERE id = ?",
-                        (json.dumps(current_data), row["id"])
-                    )
-
             conn.commit()
 
             # Broadcast update to all connected clients
@@ -126,31 +94,26 @@ async def add_column(column: ColumnCreate):
 @app.post("/api/rows")
 async def add_row(row: RowCreate):
     """Add a new website to extract data from"""
+    print(f"Received request to add row with website: {row.website}")
     try:
         with get_db() as conn:
+            # Check if any columns exist first
+            columns = conn.execute("SELECT COUNT(*) as count FROM columns").fetchone()
+            if columns['count'] == 0:
+                print("No columns exist, skipping row addition")
+                return {"message": "No columns exist yet"}
+
             # Create row
             row_id = str(uuid4())
+            print(f"Generated row ID: {row_id}")
 
-            # Get all columns for extraction
-            columns = [
-                Column(**col)
-                for col in conn.execute("SELECT * FROM columns").fetchall()
-            ]
-
-            # Extract data using Firecrawl
-            try:
-                extracted_data = await extract_data(row.website, columns)
-            except Exception as e:
-                print(f"Error extracting data for {row.website}: {e}")
-                # Initialize with N/A values if extraction fails
-                extracted_data = {col.name: "N/A" for col in columns}
-
-            # Add new row with extracted data
+            # Add new row with empty data
             conn.execute(
                 "INSERT INTO rows (id, website, data) VALUES (?, ?, ?)",
-                (row_id, row.website, json.dumps(extracted_data))
+                (row_id, row.website, json.dumps({}))
             )
             conn.commit()
+            print(f"Successfully added row with ID: {row_id}")
 
             # Broadcast update to all connected clients
             updated_data = await get_data()
@@ -159,6 +122,63 @@ async def add_row(row: RowCreate):
             return {"message": "Row added successfully", "id": row_id}
     except Exception as e:
         print(f"Error adding row: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/refresh")
+async def refresh_data():
+    """Trigger extraction for all rows"""
+    try:
+        print("\n=== Starting refresh_data operation ===")
+        with get_db() as conn:
+            # Get all columns
+            columns = [
+                Column(**col)
+                for col in conn.execute("SELECT * FROM columns").fetchall()
+            ]
+            print(f"Found columns: {[col.name for col in columns]}")
+
+            if not columns:
+                print("No columns defined for extraction")
+                return {"message": "No columns defined for extraction"}
+
+            # Get all rows
+            rows = conn.execute("SELECT id, website FROM rows").fetchall()
+            print(f"Found rows: {[row['website'] for row in rows]}")
+
+            # Process each row
+            for row in rows:
+                try:
+                    print(f"\nProcessing row for website: {row['website']}")
+                    extracted_data = await extract_data(row["website"], columns)
+                    print(f"Extracted data: {extracted_data}")
+
+                    conn.execute(
+                        "UPDATE rows SET data = ? WHERE id = ?",
+                        (json.dumps(extracted_data), row["id"])
+                    )
+                    print(f"Updated row {row['id']} with extracted data")
+                except Exception as e:
+                    print(f"Error extracting data for {row['website']}: {e}")
+                    # Set N/A for all columns on error
+                    error_data = {col.name: "N/A" for col in columns}
+                    print(f"Setting error data: {error_data}")
+                    conn.execute(
+                        "UPDATE rows SET data = ? WHERE id = ?",
+                        (json.dumps(error_data), row["id"])
+                    )
+
+            conn.commit()
+            print("Database changes committed")
+
+            # Broadcast update to all connected clients
+            updated_data = await get_data()
+            print(f"Broadcasting updated data: {updated_data}")
+            await manager.broadcast({"type": "update", "data": updated_data})
+            print("=== Refresh operation completed ===\n")
+
+            return {"message": "Data refreshed successfully"}
+    except Exception as e:
+        print(f"Error refreshing data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/columns")

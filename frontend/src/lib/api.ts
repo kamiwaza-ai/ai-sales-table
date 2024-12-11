@@ -45,11 +45,13 @@ export const api = {
   },
 
   async addRow(website: string): Promise<void> {
+    console.log('Attempting to add row with website:', website);
     const response = await fetch(`${API_BASE_URL}/api/rows`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ website }),
     });
+    console.log('Add row response:', response);
     if (!response.ok) {
       throw new Error('Failed to add row');
     }
@@ -61,6 +63,15 @@ export const api = {
     });
     if (!response.ok) {
       throw new Error('Failed to clear columns');
+    }
+  },
+
+  async refreshData(): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/refresh`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to refresh data');
     }
   }
 };
