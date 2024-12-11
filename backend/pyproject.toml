@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "ai-sales-table-backend"
+version = "0.1.0"
+description = "Sales Research Assistant Backend"
+authors = ["Devin"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.115.6"}
+uvicorn = "^0.32.1"
+python-dotenv = "^1.0.1"
+firecrawl-py = "^1.6.3"
+websockets = "^14.1"
+aiosqlite = "^0.20.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

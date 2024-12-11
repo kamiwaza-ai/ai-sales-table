@@ -1,0 +1,9 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///home/ubuntu/repos/ai-sales-table/frontend/src/app/page.tsx"],"sourcesContent":["\"use client\"\n\nimport * as React from \"react\"\nimport { DataGrid } from \"./components/data-grid\"\nimport { ColumnForm } from \"./components/column-form\"\n\nexport default function Home() {\n  return (\n    <main className=\"container mx-auto py-8\">\n      <h1 className=\"mb-8 text-3xl font-bold\">Sales Research Assistant</h1>\n\n      <div className=\"mb-8\">\n        <h2 className=\"mb-4 text-xl font-semibold\">Add New Column</h2>\n        <ColumnForm />\n      </div>\n\n      <div>\n        <h2 className=\"mb-4 text-xl font-semibold\">Research Data</h2>\n        <DataGrid />\n      </div>\n    </main>\n  )\n}\n"],"names":[],"mappings":";;;;;;;;;;;;;;AAAA;;;;AAMe,SAAS;IACtB,qBACE,6WAAC;QAAK,WAAU;;0BACd,6WAAC;gBAAG,WAAU;0BAA0B;;;;;;0BAExC,6WAAC;gBAAI,WAAU;;kCACb,6WAAC;wBAAG,WAAU;kCAA6B;;;;;;kCAC3C,6WAAC;;;;;;;;;;;0BAGH,6WAAC;;kCACC,6WAAC;wBAAG,WAAU;kCAA6B;;;;;;kCAC3C,6WAAC;;;;;;;;;;;;;;;;;AAIT"}},
+    {"offset": {"line": 87, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}},
+    {"offset": {"line": 97, "column": 0}, "map": {"version":3,"sources":["file:///home/ubuntu/repos/ai-sales-table/frontend/node_modules/.pnpm/next%4015.1.0_react-dom%4019.0.0_react%4019.0.0__react%4019.0.0/node_modules/next/src/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.ts"],"sourcesContent":["module.exports = require('../../module.compiled').vendored[\n  'react-ssr'\n].ReactJsxDevRuntime\n"],"names":["module","exports","require","vendored","ReactJsxDevRuntime"],"mappings":";AAAAA,OAAOC,OAAO,GAAGC,QAAQ,qMAAyBC,QAAQ,CACxD,YACD,CAACC,kBAAkB","ignoreList":[0]}},
+    {"offset": {"line": 99, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"A"}}]
+}
