@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Add the current directory to Python path
-cd /app
+cd /app/app
 export PYTHONPATH=/app:$PYTHONPATH
 
 # Start uvicorn
